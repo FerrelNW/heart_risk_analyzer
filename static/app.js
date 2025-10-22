@@ -76,7 +76,7 @@ async function handlePrediction(event) {
     });
 
     try {
-        // Panggil API backend
+        // Panggil API backend (yang sekarang juga mengharapkan 5 fitur)
         const response = await fetch('/api/predict_heart_disease', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -127,11 +127,12 @@ function renderResult(result, inputData) {
         riskColorClass = "text-red-500";
     }
 
-    // Urutkan SHAP values
+    // ======================= PERUBAHAN DI SINI =======================
+    // Baris .filter() telah dihapus
     const sortedShap = Object.entries(shap_values)
-        .filter(([, val]) => Math.abs(val) > 0.01) 
-        .sort(([, a], [, b]) => Math.abs(b) - Math.abs(a))
-        .slice(0, 5); 
+        .sort(([, a], [, b]) => Math.abs(b) - Math.abs(a));
+        // .slice(0, 5) juga tidak diperlukan karena kita hanya punya 5 fitur
+    // =================================================================
 
     // Dapatkan saran dinamis
     const suggestionHtml = getDynamicSuggestion(sortedShap, inputData);
@@ -144,9 +145,9 @@ function renderResult(result, inputData) {
 
         <div class="w-full text-left mb-6">
             <h3 class="text-lg font-semibold text-primary mb-3">Analisis Faktor Risiko (AI)</h3>
-            <p class="text-sm text-secondary mb-3">Grafik ini menunjukkan faktor apa saja yang paling berkontribusi pada skor risiko Anda saat ini.</p>
+            <p class="text-sm text-secondary mb-3">Berdasarkan data yang Anda masukkan, berikut adalah faktor yang paling berkontribusi pada skor risiko Anda.</p>
             
-            <div class="relative h-80"> <canvas id="shapChart"></canvas>
+            <div class="relative h-64"> <canvas id="shapChart"></canvas>
             </div>
             <p class="text-xs text-secondary mt-2 text-center">
                 <span class="text-red-500">Merah</span>: Meningkatkan Risiko | <span class="text-blue-500">Biru</span>: Menurunkan Risiko
@@ -171,43 +172,57 @@ function getDynamicSuggestion(sortedShap, inputData) {
     let suggestions = []; // Array untuk menampung saran
 
     // --- 1. Analisis berdasarkan FAKTA (inputData) ---
-    // Cek Kolesterol
+
+    // Analisis Kolesterol
     if (inputData.chol >= 240) {
-        suggestions.push("<strong>Kolesterol Anda sangat tinggi (≥ 240 mg/dl).</strong> Ini adalah faktor risiko utama. Diskusikan segera dengan dokter mengenai diet dan kemungkinan pengobatan.");
+        suggestions.push(`<strong>Kolesterol Anda (Level: ${inputData.chol}) tergolong SANGAT TINGGI.</strong> Ini adalah faktor risiko utama. Sangat disarankan untuk mengurangi lemak jenuh/trans (gorengan, jeroan) dan perbanyak serat (buah, sayur, oatmeal).`);
     } else if (inputData.chol >= 200) {
-        suggestions.push("<strong>Kolesterol Anda di batas tinggi (200-239 mg/dl).</strong> Perbaikan pola makan, seperti mengurangi lemak jenuh dan memperbanyak serat, dapat sangat membantu.");
+        suggestions.push(`<strong>Kolesterol Anda (Level: ${inputData.chol}) berada di BATAS TINGGI.</strong> Mulailah perbaiki pola makan untuk menurunkannya kembali ke level normal.`);
+    } else {
+        suggestions.push(`<strong>Kolesterol Anda (Level: ${inputData.chol}) tergolong NORMAL.</strong> Ini sangat baik! Pertahankan pola makan sehat Anda.`);
     }
 
-    // Cek Tekanan Darah
+    // Analisis Tekanan Darah (Sistolik)
     if (inputData.trestbps >= 140) {
-        suggestions.push("<strong>Tekanan darah Anda tinggi (≥ 140 mmHg).</strong> Mohon pantau secara rutin dan konsultasikan dengan dokter untuk pengobatan atau perubahan gaya hidup (misal: mengurangi garam).");
+        suggestions.push(`<strong>Tekanan Darah Anda (Level: ${inputData.trestbps}) tergolong TINGGI (Hipertensi).</strong> Ini adalah faktor risiko serius. Penting untuk mengurangi asupan garam (penyedap, makanan instan), berolahraga teratur, dan mengelola stres. Pantau secara rutin.`);
     } else if (inputData.trestbps >= 130) {
-        suggestions.push("<strong>Tekanan darah Anda di atas normal (130-139 mmHg).</strong> Mengurangi garam, berolahraga teratur, dan mengelola stres dapat membantu menurunkannya.");
+        suggestions.push(`<strong>Tekanan Darah Anda (Level: ${inputData.trestbps}) di atas normal.</strong> Ini adalah peringatan dini. Cobalah kurangi konsumsi garam dan mulai berolahraga ringan secara teratur.`);
+    } else if (inputData.trestbps >= 120) {
+         suggestions.push(`<strong>Tekanan Darah Anda (Level: ${inputData.trestbps}) sedikit meningkat.</strong> Ini masih dalam batas wajar, namun jaga agar tidak naik lebih lanjut dengan pola hidup sehat.`);
+    } else {
+        suggestions.push(`<strong>Tekanan Darah Anda (Level: ${inputData.trestbps}) tergolong NORMAL.</strong> Luar biasa! Pertahankan gaya hidup aktif dan pola makan seimbang Anda.`);
     }
-    
+
+    // Analisis Usia
+    if (inputData.age >= 50) {
+         suggestions.push(`<strong>Usia Anda (${inputData.age} tahun)</strong> secara alami adalah faktor risiko. Karena usia tidak bisa diubah, menjadi semakin penting untuk mengelola faktor lain yang bisa Anda kontrol (diet, olahraga, stres).`);
+    }
+
     // --- 2. Analisis berdasarkan AI (SHAP) ---
     if (sortedShap.length > 0) {
         const [topFactorName, topFactorValue] = sortedShap[0];
-        const featureMap = getFeatureNameMap(); // Gunakan map baru
+        const featureMap = getFeatureNameMap();
         const friendlyName = featureMap[topFactorName] || topFactorName;
 
         if (topFactorValue > 0) {
-            // Jika faktor SHAP teratas *bukan* salah satu yang sudah kita komentari, tambahkan info baru
-            if (topFactorName !== 'chol' && topFactorName !== 'trestbps') {
-                 suggestions.push(`Analisis AI menunjukkan **${friendlyName}** adalah faktor unik yang paling berkontribusi pada risiko Anda saat ini.`);
-            } else if (topFactorName === 'chol' || topFactorName === 'trestbps') {
-                 suggestions.push(`Seperti yang tercatat, Analisis AI mengonfirmasi **${friendlyName}** adalah kontributor risiko terbesar Anda.`);
+            // Hanya tambahkan jika faktor teratas BUKAN kolesterol, tensi, atau usia (karena sudah dibahas)
+            if (topFactorName !== 'chol' && topFactorName !== 'trestbps' && topFactorName !== 'age') {
+                suggestions.push(`Analisis AI juga menyoroti **${friendlyName}** (Level: ${inputData[topFactorName]}) sebagai faktor unik yang paling berkontribusi pada risiko Anda.`);
             }
         } else {
-             suggestions.push(`Kabar baik! Analisis AI menunjukkan **${friendlyName}** adalah faktor utama yang **menurunkan** risiko Anda. Pertahankan!`);
+             // Cek apakah faktor teratas (yang menurunkan risiko) bukan 'chol' atau 'trestbps' yang sudah normal
+             if (topFactorName !== 'chol' && topFactorName !== 'trestbps') {
+                suggestions.push(`Kabar baik! Analisis AI menunjukkan **${friendlyName}** (Level: ${inputData[topFactorName]}) adalah faktor utama yang **menurunkan** risiko Anda. Pertahankan!`);
+             }
         }
     }
 
     // --- 3. Bangun HTML Akhir ---
-    let html = '<h3 class="text-2xl font-semibold text-primary mb-4">Rekomendasi & Catatan</h3>';
+    let html = '<h3 class="text-2xl font-semibold text-primary mb-4">Rekomendasi & Catatan Personal</h3>';
     if (suggestions.length > 0) {
         html += '<ul class="list-disc list-inside space-y-3 text-secondary text-base">';
         suggestions.forEach(suggestion => {
+            // Ganti **teks** menjadi <strong>tag</strong>
             suggestion = suggestion.replace(/\*\*(.*?)\*\*/g, '<strong class="text-primary">$1</strong>');
             html += `<li>${suggestion}</li>`;
         });
@@ -223,58 +238,18 @@ function getDynamicSuggestion(sortedShap, inputData) {
 
 /**
  * Peta nama fitur teknis ke nama yang mudah dibaca.
- * ======================= INI ADALAH PERUBAHAN BESAR =======================
- * Menerjemahkan istilah teknis (cp_3, thal_2, ca_1) menjadi bahasa awam.
  */
 function getFeatureNameMap() {
+    // Nama kolom di sini HARUS SAMA PERSIS dengan preprocessing.py
+    // Jika Anda menggunakan 'thalac' di preprocessing.py, ganti 'thalch' di sini menjadi 'thalac'
     return {
-        // Fitur Dasar
         'age': 'Usia',
-        'sex': 'Jenis Kelamin',
+        'sex': 'Jenis Kelamin (Pria=1, Wanita=0)',
         'trestbps': 'Tekanan Darah',
         'chol': 'Kolesterol',
-        'thalch': 'Detak Jantung Maks. (saat tes)',
-        'oldpeak': 'Hasil EKG (Tes Stres)', // Lebih sederhana dari "Depresi ST"
-        
-        // Nyeri Dada (cp)
-        'cp_0': 'Tipe Nyeri Dada (Angina Tipikal)',
-        'cp_1': 'Tipe Nyeri Dada (Angina Atipikal)',
-        'cp_2': 'Tipe Nyeri Dada (Bukan Angina)',
-        'cp_3': 'Tidak Ada Gejala Nyeri Dada',
-        
-        // Gula Darah Puasa (fbs)
-        'fbs_0': 'Gula Darah Puasa (< 120 mg/dl)', // Menambah konteks
-        'fbs_1': 'Gula Darah Puasa (> 120 mg/dl)', // Menambah konteks
-
-        // EKG Istirahat (restecg)
-        'restecg_0': 'Hasil EKG Istirahat (Normal)',
-        'restecg_1': 'Hasil EKG Istirahat (Abnormal)',
-        'restecg_2': 'Hasil EKG Istirahat (Hipertrofi)',
-
-        // Nyeri Akibat Olahraga (exang)
-        'exang_0': 'Nyeri Dada Saat Olahraga (Tidak)',
-        'exang_1': 'Nyeri Dada Saat Olahraga (Ya)',
-        
-        // Kemiringan ST Puncak (slope)
-        'slope_0': 'Grafik EKG Olahraga (Naik)',
-        'slope_1': 'Grafik EKG Olahraga (Datar)',
-        'slope_2': 'Grafik EKG Olahraga (Turun)',
-        
-        // Jumlah Pembuluh Darah (ca) - JAUH LEBIH JELAS
-        'ca_0': 'Penyumbatan Arteri (0 Terdeteksi)',
-        'ca_1': 'Penyumbatan Arteri (1 Terdeteksi)',
-        'ca_2': 'Penyumbatan Arteri (2 Terdeteksi)',
-        'ca_3': 'Penyumbatan Arteri (3 Terdeteksi)',
-        'ca_4': 'Penyumbatan Arteri (4 Terdeteksi)',
-        
-        // Hasil Scan Jantung (thal) - JAUH LEBIH JELAS
-        'thal_0': 'Hasil Scan Jantung (Tidak Ada Data)',
-        'thal_1': 'Hasil Scan Jantung (Aliran Normal)',
-        'thal_2': 'Hasil Scan Jantung (Aliran Rusak Permanen)', // Jelas "Buruk"
-        'thal_3': 'Hasil Scan Jantung (Aliran Rusak Sementara)', // Jelas "Buruk"
+        'thalch': 'Detak Jantung Maks. (saat tes)', // <-- Pastikan ini SAMA dengan nama kolom Anda
     };
 }
-// ========================================================================
 
 
 /**

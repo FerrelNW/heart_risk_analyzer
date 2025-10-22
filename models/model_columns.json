@@ -1,1 +1,1 @@
-["age", "sex", "trestbps", "chol", "fbs", "thalch", "exang", "oldpeak", "cp_asymptomatic", "cp_atypical angina", "cp_non-anginal", "cp_typical angina", "restecg_lv hypertrophy", "restecg_normal", "restecg_st-t abnormality", "slope_downsloping", "slope_flat", "slope_upsloping", "thal_fixed defect", "thal_normal", "thal_reversable defect", "ca_0.0", "ca_1.0", "ca_2.0", "ca_3.0"]
+["age", "sex", "trestbps", "chol", "thalch"]

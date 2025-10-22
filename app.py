@@ -7,7 +7,7 @@ from flask_cors import CORS
 from pathlib import Path 
 import json
 
-# Impor langsung karena file-nya sejajar
+# Impor NUMERIC_FEATURES baru (sekarang berisi 4 item)
 from preprocessing import NUMERIC_FEATURES 
 
 # --- Konfigurasi Path ---
@@ -17,30 +17,30 @@ SCALER_PATH = ROOT_DIR / 'models' / 'heart_disease_scaler.joblib'
 COLUMNS_PATH = ROOT_DIR / 'models' / 'model_columns.json'
 
 # --- Inisialisasi App ---
-app = Flask(__name__) # Flask akan otomatis mencari folder 'templates' dan 'static'
+app = Flask(__name__) 
 CORS(app) 
 
 # --- Load Models & Columns ---
 model = None
 scaler = None
 model_columns = None
-explainer = None # Definisikan di luar try block
+explainer = None 
 
 try:
+    # Memuat model 5-fitur, scaler 4-fitur, dan kolom 5-item
     model = joblib.load(MODEL_PATH)
     scaler = joblib.load(SCALER_PATH)
     with open(COLUMNS_PATH, 'r') as f:
         model_columns = json.load(f)
 
-    # RandomForestClassifier menggunakan TreeExplainer
     explainer = shap.TreeExplainer(model)
-    print("Model, scaler, columns, and SHAP explainer loaded successfully.")
+    print("Model, scaler, columns, and SHAP explainer loaded successfully (5-feature model).")
 
 except FileNotFoundError:
     print("="*50)
     print("Error: Model/scaler/columns files not found.")
     print(f"Pastikan file ada di {MODEL_PATH}")
-    print("Silakan jalankan 'python model.py' terlebih dahulu.")
+    print(">>> PENTING: Jalankan 'python model.py' terlebih dahulu untuk melatih model 5-fitur! <<<")
     print("="*50)
 except Exception as e:
     print(f"An unexpected error occurred during model loading: {e}")
@@ -49,7 +49,6 @@ except Exception as e:
 # --- Rute Halaman Utama ---
 @app.route('/')
 def serve_index():
-    # Ini akan otomatis mencari 'index.html' di dalam folder 'templates'
     return render_template('index.html')
 
 # --- API Endpoint ---
@@ -63,25 +62,22 @@ def predict_heart_disease():
         # Buat DataFrame dari input
         input_df = pd.DataFrame([data]) 
         
-        # --- PREPROCESSING SISI API ---
+        # --- PREPROCESSING SISI API (JAUH LEBIH SEDERHANA) ---
         
-        # 1. Konversi Tipe Data (karena input dari web adalah float)
-        int_features = ['sex', 'cp', 'fbs', 'restecg', 'exang', 'slope', 'ca', 'thal']
-        for col in int_features:
-            if col in input_df.columns:
-                input_df[col] = input_df[col].astype(int)
+        # 1. Konversi Tipe Data 'sex'
+        if 'sex' in input_df.columns:
+            input_df['sex'] = input_df['sex'].astype(int)
 
-        # 2. Lakukan One-Hot Encoding
-        input_df = pd.get_dummies(input_df)
+        # 2. Pastikan urutan kolom benar
+        # model_columns sekarang adalah ['age', 'sex', 'trestbps', 'chol', 'thalchh']
+        try:
+            input_df = input_df[model_columns]
+        except KeyError as e:
+            print(f"Error: Kolom input tidak cocok dengan kolom model. {e}")
+            return jsonify({"error": "Data input tidak lengkap."}), 400
 
-        # 3. Rekonsiliasi Kolom
-        for col in model_columns:
-            if col not in input_df.columns:
-                input_df[col] = 0
-        
-        input_df = input_df.reindex(columns=model_columns, fill_value=0)
-
-        # 4. Scale fitur numerik
+        # 3. Scale fitur numerik
+        # NUMERIC_FEATURES sekarang adalah ['age', 'trestbps', 'chol', 'thalchh']
         input_df[NUMERIC_FEATURES] = scaler.transform(input_df[NUMERIC_FEATURES])
         
         # --- PREDIKSI ---
@@ -89,13 +85,10 @@ def predict_heart_disease():
         # Prediksi probabilitas
         prediction_proba = model.predict_proba(input_df)[0][1] # Ambil probabilitas kelas 1 (sakit)
 
-        # Hitung SHAP values. Hasilnya berbentuk (1, n_fitur, 2)
+        # Hitung SHAP values (sekarang untuk 5 fitur)
         shap_values = explainer.shap_values(input_df)
         
-        # ======================= PERUBAHAN DI SINI =======================
-        # shap_values[0] -> mengambil data untuk sampel pertama (bentuk: n_fitur, 2)
-        # val -> adalah array [shap_kelas_0, shap_kelas_1]
-        # val[1] -> kita ambil hanya nilai untuk kelas 1 (sakit)
+        # Ambil nilai shap untuk kelas 1 (indeks 1)
         shap_explanation = {name: float(val[1]) for name, val in zip(model_columns, shap_values[0])}
         # =================================================================
 
