@@ -1,39 +1,37 @@
-/* static/style.css */
-
-/* :root (default) adalah LIGHT MODE */
 :root {
-    /* Light Mode Variables */
-    --bg-primary: #F3F4F6;     /* bg-gray-100 */
-    --bg-secondary: #FFFFFF;  /* bg-white */
-    --bg-tertiary: #E5E7EB;   /* bg-gray-200 */
-    --border-color: #D1D5DB; /* border-gray-300 */
-
-    --text-primary: #1F2937;   /* text-gray-800 */
-    --text-secondary: #4B5563; /* text-gray-600 */
+    --bg-primary: #111827;
+    --bg-secondary: #1F2937;
+    --bg-tertiary: #374151;
+    --border-color: #4B5563; 
     
-    --accent-color: #3B82F6;       /* blue-600 */
-    --accent-color-dark: #2563EB; /* blue-700 */
-
-    --chart-grid-color: rgba(0, 0, 0, 0.1);
-    --chart-tick-color: #4B5563;
-}
-
-html.dark {
-    /* Dark Mode Variables */
-    --bg-primary: #111827;     /* bg-gray-900 */
-    --bg-secondary: #1F2937;  /* bg-gray-800 */
-    --bg-tertiary: #374151;   /* bg-gray-700 */
-    --border-color: #4B5563; /* border-gray-600 */
+    --text-primary: #F3F4F6;
+    --text-secondary: #9CA3AF;
     
-    --text-primary: #F3F4F6;   /* text-gray-100 */
-    --text-secondary: #9CA3AF; /* text-gray-400 */
+    --accent-color: #3B82F6;
+    --accent-color-dark: #2563EB;
 
     --chart-grid-color: rgba(255, 255, 255, 0.1);
     --chart-tick-color: #9CA3AF;
 }
 
 
-/* Style Dasar */
+html.light {
+    --bg-primary: #F3F4F6;
+    --bg-secondary: #FFFFFF;
+    --bg-tertiary: #E5E7EB;
+    --border-color: #D1D5DB;
+
+    --text-primary: #1F2937;
+    --text-secondary: #4B5563;
+
+    --accent-color: #3B82F6;
+    --accent-color-dark: #2563EB;
+
+    --chart-grid-color: rgba(0, 0, 0, 0.1);
+    --chart-tick-color: #4B5563;
+}
+
+
 body {
     font-family: 'Inter', sans-serif;
     background-color: var(--bg-primary);
@@ -41,26 +39,23 @@ body {
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Style untuk Kartu (Formulir dan Hasil) */
 .card {
-    position: relative; /* Membuat stacking context baru */
-    z-index: 1;         /* Memastikan kartu di atas body::before */
-    
+    position: relative; 
+    z-index: 1;         
     background-color: var(--bg-secondary);
     border: 1px solid var(--border-color);
-    border-radius: 0.75rem; /* rounded-xl */
-    padding: 1.5rem; /* p-6 */
+    border-radius: 0.75rem; 
+    padding: 1.5rem; 
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
-/* Style Elemen Formulir */
 .form-label {
     display: block;
-    font-size: 0.875rem; /* text-sm */
-    font-weight: 500; /* font-medium */
+    font-size: 0.875rem; 
+    font-weight: 500; 
     color: var(--text-primary);
-    margin-bottom: 0.25rem; /* mb-1 */
+    margin-bottom: 0.25rem; 
 }
 
 .form-input {
@@ -70,26 +65,23 @@ body {
     border: 1px solid var(--border-color);
     color: var(--text-primary);
     font-size: 0.875rem;
-    border-radius: 0.5rem; /* rounded-lg */
-    padding: 0.75rem 1rem; /* p-3 */
+    border-radius: 0.5rem; 
+    padding: 0.75rem 1rem; 
     transition: all 0.3s ease;
 }
 
 .form-input:focus {
     outline: none;
     border-color: var(--accent-color);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3); /* Ring color */
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3); 
 }
 
 .form-helper-text {
-    font-size: 0.75rem; /* text-xs */
+    font-size: 0.75rem; 
     color: var(--text-secondary);
-    margin-top: 0.25rem; /* mt-1 */
+    margin-top: 0.25rem; 
 }
 
-/* Hapus style .form-radio yang lama, ganti dengan ini */
-
-/* Style Tombol Utama */
 button[type="submit"] {
     background-color: var(--accent-color);
 }
@@ -97,7 +89,6 @@ button[type="submit"]:hover {
     background-color: var(--accent-color-dark);
 }
 
-/* Style Tombol Toggle Tema */
 #theme-toggle {
     background-color: var(--bg-tertiary);
     color: var(--text-secondary);
@@ -107,7 +98,7 @@ button[type="submit"]:hover {
     color: var(--text-primary);
 }
 
-/* Pola Latar Belakang (Dibuat sangat halus) */
+
 body::before {
     content: '';
     position: fixed;
@@ -116,7 +107,7 @@ body::before {
     width: 100%;
     height: 100%;
     z-index: -1; 
-    opacity: 0.03; /* Opasitas default (light mode) */
+    opacity: 0.05; 
     
     background-image: 
         linear-gradient(var(--border-color) 1px, transparent 1px),
@@ -126,19 +117,17 @@ body::before {
     transition: opacity 0.3s ease;
 }
 
-html.dark body::before {
-    opacity: 0.05; /* Opasitas dark mode */
+html.light body::before {
+    opacity: 0.03;
 }
 
 
-/* ======================= STYLE BARU DI SINI ======================= */
-/* Style untuk Tombol Radio Kustom (Jenis Kelamin) */
 .radio-button-label {
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 0.75rem 1rem;
-    border-radius: 0.5rem; /* rounded-lg */
+    border-radius: 0.5rem; 
     border: 2px solid var(--border-color);
     background-color: var(--bg-tertiary);
     color: var(--text-secondary);
@@ -147,28 +136,24 @@ html.dark body::before {
     transition: all 0.2s ease-in-out;
 }
 
-/* Style saat label di-hover */
 .radio-button-label:hover {
     border-color: var(--accent-color);
     background-color: var(--bg-primary);
 }
 
-/* Style saat radio button TERPILIH */
 input[type="radio"]:checked + .radio-button-label {
     border-color: var(--accent-color);
     background-color: var(--accent-color);
-    color: white; /* Teks putih saat terpilih */
+    color: white; 
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
-/* Style untuk fokus (aksesibilitas) */
 input[type="radio"]:focus-visible + .radio-button-label {
     outline: none;
     border-color: var(--accent-color);
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
 }
 
-/* Menyembunyikan radio button asli */
 .sr-only {
     position: absolute;
     width: 1px;

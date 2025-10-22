@@ -4,7 +4,7 @@ from preprocessing import load_and_prep_data
 from pathlib import Path
 import json
 
-# --- Konfigurasi Path ---
+# Path
 ROOT_DIR = Path(__file__).parent 
 DATA_FILE_PATH = ROOT_DIR / 'data' / 'heart_disease_uci.csv'
 
@@ -14,11 +14,9 @@ COLUMNS_SAVE_PATH = ROOT_DIR / 'models' / 'model_columns.json'
 
 def train_and_save_model():
     """
-    Melatih model RandomForest Classifier untuk prediksi penyakit jantung.
-    (Sekarang menggunakan 5 fitur dari preprocessing.py)
+    Melatih model RandomForest Classifier untuk prediksi penyakit jantung menggunakan 5 fitur.
     """
     print("Loading and preparing data for Heart Disease model...")
-    # Memanggil load_and_prep_data yang sudah dimodifikasi
     X, y, scaler = load_and_prep_data(DATA_FILE_PATH, COLUMNS_SAVE_PATH)
     
     if X is None:
@@ -32,10 +30,8 @@ def train_and_save_model():
     
     print("Model training complete.")
 
-    # Pastikan folder 'models' ada
     (ROOT_DIR / 'models').mkdir(exist_ok=True)
 
-    # Simpan model, scaler, dan daftar kolom
     try:
         joblib.dump(model, MODEL_SAVE_PATH)
         joblib.dump(scaler, SCALER_SAVE_PATH)
@@ -44,6 +40,5 @@ def train_and_save_model():
     except Exception as e:
         print(f"Error saving models: {e}")
 
-# Jalankan file ini untuk melatih model
 if __name__ == "__main__":
     train_and_save_model()

@@ -1,11 +1,8 @@
 <!DOCTYPE html>
-<html lang="id">
-<head>
+<html lang="en" class="dark"> <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prediktor Risiko Penyakit Jantung</title>
-    
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Heart Disease Risk Predictor</title> <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,101 +11,85 @@
     
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
-    <script>
-        // Terapkan tema (gelap/terang) dari localStorage SEBELUM halaman di-render
-        try {
-            const theme = localStorage.getItem('theme');
-            if (theme === 'dark') {
-                document.documentElement.classList.add('dark');
-            } else {
-                document.documentElement.classList.remove('dark');
-            }
-        } catch (e) {
-            // Abaikan jika localStorage tidak tersedia
-        }
-    </script>
 </head>
 <body class="bg-primary text-primary antialiased transition-colors duration-300">
 
     <header class="container mx-auto max-w-5xl px-4 py-6 flex justify-between items-center">
         <div>
             <h1 class="text-3xl font-bold text-accent mb-1">
-                ❤️ Kardio.AI
+                ❤️ HeartRisk.AI 
             </h1>
-            <p class="text-lg text-secondary">Analisis Risiko Jantung Anda dengan AI</p>
+            <p class="text-lg text-secondary">AI Analyzing Your Heart Risk Factors Based on Health Data</p> 
         </div>
         
-        <button id="theme-toggle" class="p-2 rounded-lg bg-tertiary text-secondary hover:bg-opacity-80 transition-all" aria-label="Toggle dark mode">
-            <svg id="theme-icon-sun" class="w-6 h-6 hidden" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.706-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-1.636 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm-12.02 0a1 1 0 011.414 1.414l-.706.707a1 1 0 01-1.414-1.414l.706-.707zM3 11a1 1 0 100-2H2a1 1 0 100 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
-            <svg id="theme-icon-moon" class="w-6 h-6 hidden" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
-        </button>
-    </header>
+        </header>
 
     <main class="container mx-auto max-w-5xl p-4">
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
             
             <section id="predictor-card" class="card">
-                <h2 class="text-2xl font-semibold text-primary text-center mb-6">Masukkan Data Pasien</h2>
+                 <h2 class="text-2xl font-semibold text-primary text-center mb-6">Enter Patient Data</h2>
                 
                 <form id="predict-form" class="space-y-5">
                     <div>
-                        <label for="age" class="form-label">Usia</L>
+                         <label for="age" class="form-label">Age</L>
                         <input id="age" name="age" type="number" value="52" class="form-input" required>
-                        <small class="form-helper-text">Masukkan usia Anda dalam tahun.</small>
+                         <small class="form-helper-text">Enter your age in years.</small>
                     </div>
 
                     <div>
-                        <label class="form-label">Jenis Kelamin</label>
+                         <label class="form-label">Sex</label>
                         <fieldset class="mt-2 grid grid-cols-2 gap-3">
                             <input type="radio" name="sex" value="1" id="sex-pria" class="sr-only" checked>
                             <label for="sex-pria" class="radio-button-label">
-                                <span>Pria</span>
+                                 <span>Male</span>
                             </label>
                             <input type="radio" name="sex" value="0" id="sex-wanita" class="sr-only">
                             <label for="sex-wanita" class="radio-button-label">
-                                <span>Wanita</span>
+                                 <span>Female</span>
                             </label>
                         </fieldset>
                     </div>
 
                     <div>
-                        <label for="chol" class="form-label">Kolesterol Total</label>
+                         <label for="chol" class="form-label">Total Cholesterol</label>
                         <input id="chol" name="chol" type="number" value="212" class="form-input" required>
-                        <small class="form-helper-text">Angka dari hasil tes darah. (Normal: di bawah 200)</small>
+                         <small class="form-helper-text">Value from blood test results. (Normal: below 200)</small>
                     </div>
 
                     <div>
-                        <label for="trestbps" class="form-label">Tekanan Darah (Sistolik)</label>
+                         <label for="trestbps" class="form-label">Resting Blood Pressure (Systolic)</label>
                         <input id="trestbps" name="trestbps" type="number" value="125" class="form-input" required>
-                        <small class="form-helper-text">Angka "atas" dari hasil tes tensi. (Normal: di bawah 120)</small>
+                         <small class="form-helper-text">The "top" number from your blood pressure test. (Normal: below 120)</small>
                     </div>
 
                     <div>
-                        <label for="thalch" class="form-label">Detak Jantung Puncak (Tes Olahraga)</label>
+                         <label for="thalch" class="form-label">Max Heart Rate (Exercise Test)</label>
                         <input id="thalch" name="thalch" type="number" value="168" class="form-input" required>
-                        <small class="form-helper-text">Detak jantung tertinggi saat tes stres/treadmill. (Contoh: 168)</small>
+                         <small class="form-helper-text">Highest heart rate achieved during stress/treadmill test. (Example: 168)</small>
                     </div>
                     
                     <button id="predict-button" type="submit" class="w-full text-white bg-accent hover:bg-accent-dark font-medium rounded-lg text-base px-5 py-3 text-center transition-all duration-200">
-                        <span id="button-text">Analisis Risiko</span>
-                        <span id="button-loader" class="hidden">Menganalisis...</span>
+                         <span id="button-text">Analyze Risk</span>
+                         <span id="button-loader" class="hidden">Analyzing...</span>
                     </button>
                 </form>
             </section>
 
             <section id="result-container" class="card">
                 <div id="result-content" class="text-center flex flex-col justify-center items-center h-full space-y-2">
-                    <h2 class="text-2xl font-semibold text-primary mb-2">Hasil Analisis</h2>
-                    <p class="text-secondary text-lg">Hasil prediksi risiko Anda akan muncul di sini.</p>
-                    <svg class="w-24 h-24 text-gray-400 dark:text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                     <h2 class="text-2xl font-semibold text-primary mb-2">Analysis Results</h2>
+                     <p class="text-secondary text-lg">Your risk prediction results will appear here.</p>
+                    <svg class="w-24 h-24 text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
-                    </svg>                  
+                    </svg>                          
                 </div>
             </section>
 
-        </div> <section id="recommendation-container" class="card w-full mt-8 hidden">
-            </section>
+        </div> 
+        <section id="recommendation-container" class="card w-full mt-8 hidden">
+        </section>
 
     </main>
     
