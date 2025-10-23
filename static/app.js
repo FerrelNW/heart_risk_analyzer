@@ -173,6 +173,7 @@ function getDynamicSuggestion(sortedShap, inputData) {
     return html;
 }
 
+
 function getFeatureNameMap() {
     return {
         'age': 'Age',

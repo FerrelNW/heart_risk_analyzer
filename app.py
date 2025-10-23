@@ -47,6 +47,7 @@ except Exception as e:
 def serve_index():
     return render_template('index.html')
 
+
 @app.route('/api/predict_heart_disease', methods=['POST'])
 def predict_heart_disease():
     if model is None or explainer is None or scaler is None or model_columns is None: 

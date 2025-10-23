@@ -51,6 +51,7 @@ def load_and_prep_data(csv_path, columns_path=None):
     scaler = StandardScaler()
     X[NUMERIC_FEATURES] = scaler.fit_transform(X[NUMERIC_FEATURES])
 
+
     if columns_path:
         try:
             with open(columns_path, 'w') as f:
